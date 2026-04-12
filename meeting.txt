@@ -1,0 +1,17 @@
+John: Alright everyone, let's get started. Today we need to discuss the Q3 product launch.
+
+Sarah: The design team has finished the mockups. We're ready for developer handoff by Friday.
+
+John: Great. Mike, how's the backend coming along?
+
+Mike: We're about 70% done. I need 2 more weeks to finish the API integration.
+
+John: Okay so the launch moves to end of month. Sarah can you send the designs to Mike today?
+
+Sarah: Sure, I'll do that right after this call.
+
+John: Also, we need someone to write the release notes. Can you handle that Mike?
+
+Mike: Yes, I'll have a draft by next Wednesday.
+
+John: Perfect. Let's plan to meet again next Friday to check progress. That's it for today.
