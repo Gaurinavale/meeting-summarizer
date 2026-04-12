@@ -3,11 +3,11 @@ import os
 
 try:
     import streamlit as st
-    API_KEY = st.secrets["OPENROUTER_API_KEY"]
+    API_KEY = st.secrets["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"]
 except:
     from dotenv import load_dotenv
     load_dotenv()
-    API_KEY = os.getenv("OPENROUTER_API_KEY")
+    API_KEY = os.getenv("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")
 
 
 def summarize_meeting(transcript: str) -> dict:

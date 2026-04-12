@@ -5,11 +5,11 @@ from datetime import date
 
 try:
     import streamlit as st
-    API_KEY = st.secrets["OPENROUTER_API_KEY"]
+    API_KEY = st.secrets["notepad C:\meeting-summarizer\extractor.py"]
 except:
     from dotenv import load_dotenv
     load_dotenv()
-    API_KEY = os.getenv("OPENROUTER_API_KEY")
+    API_KEY = os.getenv("notepad C:\meeting-summarizer\extractor.py")
 
 
 def extract_structured_data(summary_text: str) -> dict:
