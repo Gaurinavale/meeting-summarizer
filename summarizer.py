@@ -1,20 +1,9 @@
 import requests
-import os
 
-try:
-    import streamlit as st
-    API_KEY = st.secrets["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"]
-except:
-    from dotenv import load_dotenv
-    load_dotenv()
-    API_KEY = os.getenv("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")
-
+API_KEY = "sk-or-your-actual-key-here"
 
 def summarize_meeting(transcript: str) -> dict:
-    """Send transcript to OpenRouter (free models)"""
-
     url = "https://openrouter.ai/api/v1/chat/completions"
-
     prompt = f"""You are an expert meeting analyst. Analyze this meeting transcript and return a structured summary.
 
 TRANSCRIPT:
@@ -37,12 +26,10 @@ Provide your response in this exact format:
 ## 👥 Participants
 - [Names or roles mentioned]
 """
-
     headers = {
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json"
     }
-
     payload = {
         "model": "openrouter/free",
         "messages": [{"role": "user", "content": prompt}],
@@ -57,5 +44,4 @@ Provide your response in this exact format:
         print("❌ API Error:", data)
         return {"raw": "Error from OpenRouter API"}
 
-    summary_text = data["choices"][0]["message"]["content"]
-    return {"raw": summary_text}
+    return {"raw": data["choices"][0]["message"]["content"]}
