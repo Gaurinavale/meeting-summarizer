@@ -3,6 +3,7 @@ from summarizer import summarize_meeting
 from extractor import extract_structured_data, save_json
 import os
 import json
+os.makedirs("outputs", exist_ok=True)
 
 def get_transcript(input_path: str) -> str:
     ext = os.path.splitext(input_path)[1].lower()
