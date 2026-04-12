@@ -1,7 +1,7 @@
 import requests
+import os
 
-API_KEY = "sk-or-your-actual-key-here"
-
+API_KEY = os.environ.get("OPENROUTER_API_KEY") or "sk-or-your-actual-key-here"
 def summarize_meeting(transcript: str) -> dict:
     url = "https://openrouter.ai/api/v1/chat/completions"
     prompt = f"""You are an expert meeting analyst. Analyze this meeting transcript and return a structured summary.

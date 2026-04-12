@@ -3,7 +3,8 @@ import json
 import os
 from datetime import date
 
-API_KEY = "sk-or-your-actual-key-here"
+import os
+API_KEY = os.environ.get("OPENROUTER_API_KEY") or "sk-or-your-actual-key-here"
 
 def extract_structured_data(summary_text: str) -> dict:
     url = "https://openrouter.ai/api/v1/chat/completions"
