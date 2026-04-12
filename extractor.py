@@ -2,20 +2,19 @@ import requests
 import json
 import os
 from datetime import date
-from dotenv import load_dotenv
 
-load_dotenv()
+try:
+    import streamlit as st
+    API_KEY = st.secrets["OPENROUTER_API_KEY"]
+except:
+    from dotenv import load_dotenv
+    load_dotenv()
+    API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-def extract_structured_data(summary_text: str) -> dict:
-    API_KEY = os.getenv("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")
-import requests
-import json
-from datetime import date
 
 def extract_structured_data(summary_text: str) -> dict:
     """Send summary to AI and get clean structured JSON"""
 
-    API_KEY = "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"  # same key as summarizer.py
     url = "https://openrouter.ai/api/v1/chat/completions"
 
     prompt = f"""You are a data extraction expert. Extract structured information from this meeting summary and return ONLY a valid JSON object. No explanation, no markdown, just raw JSON.
@@ -60,7 +59,6 @@ Return this exact JSON structure:
 
     raw_text = data["choices"][0]["message"]["content"]
 
-    # Clean up response and parse JSON
     raw_text = raw_text.strip()
     if raw_text.startswith("```"):
         raw_text = raw_text.split("```")[1]

@@ -1,17 +1,18 @@
 import requests
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
+try:
+    import streamlit as st
+    API_KEY = st.secrets["OPENROUTER_API_KEY"]
+except:
+    from dotenv import load_dotenv
+    load_dotenv()
+    API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-def summarize_meeting(transcript: str) -> dict:
-    API_KEY = os.getenv("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")
-import requests
 
 def summarize_meeting(transcript: str) -> dict:
     """Send transcript to OpenRouter (free models)"""
 
-    API_KEY = "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"  # paste sk-or-... key here
     url = "https://openrouter.ai/api/v1/chat/completions"
 
     prompt = f"""You are an expert meeting analyst. Analyze this meeting transcript and return a structured summary.
@@ -43,12 +44,12 @@ Provide your response in this exact format:
     }
 
     payload = {
-       "model": "openrouter/free",
+        "model": "openrouter/free",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 1000
     }
 
-    print("🤖 Sending to OpenRouter (Mistral 7B free) for analysis...")
+    print("🤖 Sending to OpenRouter for analysis...")
     response = requests.post(url, headers=headers, json=payload)
     data = response.json()
 
