@@ -1,78 +1,66 @@
-import requests
 import json
-import os
-import time
+import re
 from datetime import date
 
-try:
-    import streamlit as st
-    API_KEY = st.secrets["OPENROUTER_API_KEY"]
-except:
-    from dotenv import load_dotenv
-    load_dotenv()
-    API_KEY = os.getenv("OPENROUTER_API_KEY")
-
-MODELS = [
-    "nvidia/nemotron-3-super-120b-a12b:free",
-    "google/gemma-4-31b-it:free",
-    "openai/gpt-oss-20b:free",
-    "minimax/minimax-m2.5:free",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
-]
-
 def extract_structured_data(summary_text: str) -> dict:
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    prompt = f"""Extract structured information from this meeting summary. Return ONLY valid JSON, no explanation.
+    """Extract structured data from summary text without API call"""
 
-MEETING SUMMARY:
-{summary_text}
-
-Return this exact JSON:
-{{
-  "meeting_date": "{date.today()}",
-  "participants": ["name1", "name2"],
-  "action_items": [
-    {{
-      "owner": "person name",
-      "task": "what they need to do",
-      "deadline": "when (or 'Not specified')"
-    }}
-  ],
-  "key_decisions": ["decision 1"],
-  "discussion_points": ["point 1"],
-  "overall_summary": "2-3 sentence summary"
-}}"""
-
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
+    result = {
+        "meeting_date": str(date.today()),
+        "participants": [],
+        "action_items": [],
+        "key_decisions": [],
+        "discussion_points": [],
+        "overall_summary": ""
     }
 
-    for model in MODELS:
-        print(f"🔍 Trying model: {model}")
-        payload = {
-            "model": model,
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": 1000
-        }
-        try:
-            response = requests.post(url, headers=headers, json=payload, timeout=30)
-            data = response.json()
-            if "choices" in data:
-                raw_text = data["choices"][0]["message"]["content"].strip()
-                if raw_text.startswith("```"):
-                    raw_text = raw_text.split("```")[1]
-                    if raw_text.startswith("json"):
-                        raw_text = raw_text[4:]
-                return json.loads(raw_text.strip())
-            else:
-                print(f"❌ {model} failed: {data.get('error', {}).get('message')}")
-                time.sleep(2)
-        except Exception as e:
-            print(f"❌ {model} error: {e}")
-            time.sleep(2)
+    lines = summary_text.split("\n")
+    current_section = None
 
-    return {}
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+
+        if "Meeting Summary" in line:
+            current_section = "summary"
+        elif "Action Items" in line:
+            current_section = "actions"
+        elif "Key Decisions" in line:
+            current_section = "decisions"
+        elif "Key Discussion" in line:
+            current_section = "discussion"
+        elif "Participants" in line:
+            current_section = "participants"
+        elif line.startswith("-") or line.startswith("•"):
+            content = line.lstrip("-•").strip()
+            if current_section == "participants":
+                result["participants"].append(content)
+            elif current_section == "decisions":
+                result["key_decisions"].append(content)
+            elif current_section == "discussion":
+                result["discussion_points"].append(content)
+            elif current_section == "actions":
+                # Try to parse "Person: Task by Deadline"
+                if ":" in content:
+                    parts = content.split(":", 1)
+                    owner = parts[0].strip()
+                    task_part = parts[1].strip()
+                    deadline = "Not specified"
+                    if " by " in task_part.lower():
+                        idx = task_part.lower().index(" by ")
+                        deadline = task_part[idx+4:].strip()
+                        task_part = task_part[:idx].strip()
+                    result["action_items"].append({
+                        "owner": owner,
+                        "task": task_part,
+                        "deadline": deadline
+                    })
+        elif current_section == "summary" and line and not line.startswith("#"):
+            result["overall_summary"] += line + " "
+
+    result["overall_summary"] = result["overall_summary"].strip()
+    return result
 
 def save_json(data: dict, path: str = "outputs/meeting_data.json"):
     with open(path, "w", encoding="utf-8") as f:
